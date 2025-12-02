@@ -40,8 +40,6 @@ This pattern is particularly useful for implementing secure module interactions 
 
 ### Useful Links
 
-[Links will be provided by the user]
-
 - [Pattern: Capability](https://move-book.com/programmability/capability.html)
 - [Pattern: Witness](https://move-book.com/programmability/witness-pattern.html)
 - [Pattern: Display](https://move-book.com/programmability/display)
