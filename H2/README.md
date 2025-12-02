@@ -30,18 +30,7 @@ The witness pattern demonstrates how to implement module-level or smart contract
 
 This pattern is particularly useful for implementing secure module interactions and ensuring that only authorized modules can perform specific actions.
 
-## 3. Hot Potato Pattern
-
-The hot potato pattern showcases dynamic flow control:
-
-- Implements ability-less objects that must be consumed
-- Demonstrates how to chain multiple calls in a single transaction
-- Shows how to create dynamic flows with different potential combinations
-- Illustrates the importance of proper object destruction in Programmable Transaction Blocks (PTB)
-
-This pattern is essential for implementing complex transaction flows where objects must be passed through multiple functions and eventually consumed.
-
-## 4. Display Pattern
+## 3. Display Pattern
 
 - Display is Sui's standard for defining how objects should be rendered in wallets and explorers
 - It provides a flexible way to attach metadata to on-chain objects
@@ -55,4 +44,4 @@ This pattern is essential for implementing complex transaction flows where objec
 
 - [Pattern: Capability](https://move-book.com/programmability/capability.html)
 - [Pattern: Witness](https://move-book.com/programmability/witness-pattern.html)
-- [Pattern: Hot Potato](https://move-book.com/programmability/hot-potato-pattern.html)
+- [Pattern: Display](https://move-book.com/programmability/display)
