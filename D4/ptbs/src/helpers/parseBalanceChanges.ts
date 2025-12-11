@@ -21,8 +21,31 @@ export const parseBalanceChanges = ({
   recipientAddress,
 }: Args): Response => {
   // TODO: Implement the function
+
+  let recipientSUIBalanceChange = 0;
+  let senderSUIBalanceChange = 0;
+  
+  for (const change of balanceChanges) {
+    if (change.coinType !== "0x2::sui::SUI") {
+      continue
+    }
+    
+    if (change.owner === "Immutable" || !("AddressOwner" in change.owner)) {
+      continue;
+    }
+
+    if (change.owner.AddressOwner === recipientAddress) {
+      recipientSUIBalanceChange += Number(change.amount);
+    }
+    
+    if (change.owner.AddressOwner === senderAddress) {
+      senderSUIBalanceChange += Number(change.amount);
+    }
+    
+  }
+
   return {
-    recipientSUIBalanceChange: 0,
-    senderSUIBalanceChange: 0,
+    recipientSUIBalanceChange,
+    senderSUIBalanceChange,
   }
 };
