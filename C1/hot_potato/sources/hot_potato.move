@@ -10,7 +10,7 @@ const MIN_PAYMENT: u64 = 1_000_000;
 // Error: Insufficient payment
 const EInvalidPayment: u64 = 100;
 
-public struct HotPotato {
+public struct HotPotato has drop {
     payment_approved: bool,
 }
 
@@ -48,7 +48,7 @@ public fun process_payment(
 ) {
     // TODO process the payment
     assert!(coin::value(&payment) >= MIN_PAYMENT, EInvalidPayment);
-    balance::deposit(&mut contract_balance.balance, payment);
+    balance::join(&mut contract_balance.balance, coin::into_balance(payment));
     hot_potato.payment_approved = true;
 }
 
@@ -67,8 +67,6 @@ const ADMIN: address = @0x1;
 const USER: address = @0x2;
 #[test_only]
 use sui::test_scenario as ts;
-#[test_only]
-use sui::test_utils;
 
 // Test with sufficient payment - PASSES
 #[test]
@@ -93,7 +91,7 @@ fun test_hot_potato_success() {
     let hero = mint_hero(potato, scenario.ctx());
 
     // Verify that the hero was created
-    test_utils::destroy(hero);
+    std::unit_test::destroy(hero);
 
     ts::return_shared(contract_balance);
     scenario.end();
