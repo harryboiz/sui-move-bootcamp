@@ -8,6 +8,12 @@ import { suiClient } from "../suiClient";
  */
 export const getHeroSwordIds = async (id: string): Promise<string[]> => {
   // Fetch the dynamic fields for the given hero object id
+  const resp = await suiClient.getDynamicFields({
+    parentId: id,
+    limit: 50,
+  });
+
+  // Filter the dynamic fields to find swords and return their object ids
 
   return resp.data
     .filter(

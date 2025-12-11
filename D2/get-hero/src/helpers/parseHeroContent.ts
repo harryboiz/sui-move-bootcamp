@@ -20,4 +20,19 @@ interface HeroContent {
  */
 export const parseHeroContent = (objectResponse: SuiObjectResponse): Hero => {
   // Implement the function to parse the hero content
+  const content = objectResponse.data?.content;
+  if (!content) {
+    throw new Error("Object content is missing");
+  }
+
+  if (content.dataType !== "moveObject") {
+    throw new Error("Object is not a Move object");
+  }
+
+  const parsedContent = content as unknown as HeroContent;
+  return {
+    id: parsedContent.fields.id.id,
+    health: parsedContent.fields.health,
+    stamina: parsedContent.fields.stamina,
+  };
 };
