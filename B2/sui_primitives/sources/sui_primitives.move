@@ -4,7 +4,7 @@ use sui::dynamic_field;
 #[test_only]
 use sui::dynamic_object_field;
 #[test_only]
-use std::string::{String};
+use std::string::{Self, String};
 #[test_only]
 use sui::test_scenario;
 
@@ -17,31 +17,54 @@ fun test_numbers() {
 
 #[test]
 fun test_overflow() {
-    let a = 500;
-    let b = 500;
-
     assert!(1000 == 1000u16, 604);
 }
 
 #[test]
-fun test_mutability() {}
+fun test_mutability() {
+    let mut x = 10;
+    assert!(x == 10, 600);
+    x = 20;
+    assert!(x == 20, 602);
+}
 
 #[test]
-fun test_boolean() {}
+fun test_boolean() {
+    let a = true;
+    let b = false;
+    assert!(a != b, 605);
+
+}
 
 #[test]
-fun test_loop() {}
+fun test_loop() {
+    let mut sum = 0;
+    let mut i = 1;
+    while (i <= 5) {
+        sum = sum + i;
+        i = i + 1;
+    };
+    assert!(sum == 15, 606);
+}
 
 #[test]
 fun test_vector() {
     let mut myVec: vector<u8> = vector[10, 20, 30];
 
-    assert!(myVec.is_empty() == true);
+    assert!(myVec.is_empty() == false);
+
+    myVec.push_back(40);
+
+    assert!(myVec.length() == 4, 603);
 }
 
 #[test]
 fun test_string() {
     let myStringArr: vector<u8> = b"Hello, World!";
+
+    let myString = string::utf8(myStringArr);
+
+    assert!(string::length(&myString) == 13, 602);
 }
 
 #[test]

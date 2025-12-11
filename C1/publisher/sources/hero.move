@@ -4,25 +4,40 @@ module publisher::hero {
 
     const EWrongPublisher: u64 = 1;
 
+    public struct HERO has drop {}
+
     public struct Hero has key {
         id: UID,
         name: String,
     }
 
-    fun init(ctx: &mut TxContext) {
+    fun init(otw: HERO, ctx: &mut TxContext) {
         // create Publisher and transfer it to the publisher wallet
+        let publisher = package::claim(otw, ctx);
+        transfer::public_transfer(publisher, tx_context::sender(ctx));
     }
 
     public fun create_hero(publisher: &Publisher, name: String, ctx: &mut TxContext): Hero {
         // verify that publisher is from the same module
+        if (!package::from_package<HERO>(publisher)) {
+            abort EWrongPublisher
+        };
 
         // create Hero resource
+        Hero {
+            id: object::new(ctx),
+            name,
+        }
     }
 
     public fun transfer_hero(publisher: &Publisher, hero: Hero, to: address) {
         // verify that publisher is from the same module
+        if (!package::from_package<HERO>(publisher)) {
+            abort EWrongPublisher
+        };
 
         // transfer the Hero resource to the user
+        transfer::transfer(hero, to);
     }
 
     // ===== TEST ONLY =====
@@ -78,6 +93,28 @@ module publisher::hero {
     #[test]
     fun test_admin_can_transfer_hero() {
         // TODO: Implement test
+        let mut ts = ts::begin(ADMIN);
+
+        init(HERO {}, ts.ctx());
+
+        ts.next_tx(ADMIN);
+
+        let publisher = ts.take_from_sender<Publisher>();
+
+        let hero = create_hero(&publisher, b"Hero 1".to_string(), ts.ctx());
+
+        transfer_hero(&publisher, hero, USER);
+
+        ts.next_tx(USER);
+
+        let received_hero = ts.take_from_sender<Hero>();
+
+        assert_eq!(received_hero.name, b"Hero 1".to_string());
+
+        ts.return_to_sender(publisher);
+        ts::return_to_address(USER, received_hero);
+
+        ts.end();
     }
 }
 

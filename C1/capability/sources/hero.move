@@ -12,27 +12,32 @@ public struct AdminCap has key {
 
 fun init(ctx: &mut TxContext) {
     // create a new AdminCap
-
+    let admin_cap = AdminCap { id: object::new(ctx) };
     // transfer the AdminCap to the publisher wallet
+    transfer::transfer(admin_cap, tx_context::sender(ctx));
 }
 
 public fun create_hero(_: &AdminCap, name: String, ctx: &mut TxContext): Hero {
     // create a new Hero resource
+    Hero { id: object::new(ctx), name }
 }
 
 public fun transfer_hero(_: &AdminCap, hero: Hero, to: address) {
     // transfer the Hero resource to the user
+    transfer::transfer(hero, to);
 }
 
 public fun new_admin(_: &AdminCap, to: address, ctx: &mut TxContext) {
+    let new_admin_cap = AdminCap { id: object::new(ctx) };
+    transfer::transfer(new_admin_cap, to);
 }
 
 // ===== TEST ONLY =====
 
 #[test_only]
-use sui::{test_scenario as ts, test_utils::{destroy}};
+use sui::{test_scenario as ts};
 #[test_only]
-use std::unit_test::assert_eq;
+use std::unit_test::{assert_eq, destroy};
 
 #[test_only]
 const ADMIN: address = @0xAA;
@@ -104,4 +109,13 @@ fun test_admin_can_transfer_hero() {
 #[test]
 fun test_admin_can_create_more_admins() {
     // TODO: Implement test
+    let mut ts = ts::begin(ADMIN);
+    init(ts.ctx());
+    ts.next_tx(ADMIN);
+    let admin_cap = ts.take_from_sender<AdminCap>();
+    new_admin(&admin_cap, ADMIN2, ts.ctx());
+    ts.next_tx(ADMIN2);
+    assert_eq!(ts::has_most_recent_for_address<AdminCap>(ADMIN2), true);
+    ts.return_to_sender(admin_cap);
+    ts.end();
 }

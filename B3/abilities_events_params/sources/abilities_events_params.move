@@ -2,30 +2,107 @@ module abilities_events_params::abilities_events_params;
 use std::string::String;
 use sui::event;
 
-//Error Codes
+// MARK: Error Codes
+
 const EMedalOfHonorNotAvailable: u64 = 111;
 
-// Structs
+// MARK: Structs
 
 public struct Hero has key {
     id: UID, // required
     name: String,
+    medals: vector<Medal>,
 }
 
-// Module Initializer
-fun init(ctx: &mut TxContext) {}
+public struct Medal has key, store {
+    id: UID,
+    name: String,
+}
+
+public struct MedalStorage has key {
+    id: UID,
+    medals: vector<Medal>,
+}
+
+// MARK: Events
+
+public struct HeroMinted has copy, drop {
+    hero_id: ID,
+    owner: address,
+}
+
+// MARK: Module Initializer
+
+fun init(ctx: &mut TxContext) {
+    let medal_of_honor = Medal {
+        id: object::new(ctx),
+        name: b"Medal of Honor".to_string(),
+    };
+
+    let mut medal_storage = MedalStorage {
+        id: object::new(ctx),
+        medals: vector::empty<Medal>(),
+    };
+
+    vector::push_back(&mut medal_storage.medals, medal_of_honor);
+
+    transfer::share_object(medal_storage);
+}
 
 public fun mint_hero(name: String, ctx: &mut TxContext): Hero {
     let freshHero = Hero {
         id: object::new(ctx), // creates a new UID
         name,
+        medals: vector::empty<Medal>(),
     };
+
+    event::emit(HeroMinted {
+            hero_id: object::id(&freshHero),
+            owner: ctx.sender(),
+        },
+    );
+
     freshHero
 }
 
 public fun mint_and_keep_hero(name: String, ctx: &mut TxContext) {
     let hero = mint_hero(name, ctx);
     transfer::transfer(hero, ctx.sender());
+}
+
+public fun get_medal_by_name(
+    medal_storage: &MedalStorage, 
+    medal_name: String, 
+    ctx: &mut TxContext
+): option::Option<Medal> {
+    let len = vector::length(&medal_storage.medals);
+    let mut i = 0;
+    while (i < len) {
+        let medal = vector::borrow(&medal_storage.medals, i);
+        if (medal.name == medal_name) {
+            return option::some(Medal {
+                id: object::new(ctx),
+                name: medal_name,
+            })
+        };
+        i = i + 1;
+    };
+    option::none<Medal>()
+}
+
+public fun award_medal_of_honor(
+    hero: &mut Hero, 
+    medal_storage: &MedalStorage, 
+    medal_name: String,
+    ctx: &mut TxContext
+) {
+    let mut medal_option = medal_storage.get_medal_by_name(medal_name, ctx);
+    if (option::is_none(&medal_option)) {
+        abort EMedalOfHonorNotAvailable
+    };
+    let medal = option::extract<Medal>(&mut medal_option);
+    vector::push_back(&mut hero.medals, medal);
+    medal_option.destroy_none();
 }
 
 /////// Tests ///////
@@ -75,7 +152,22 @@ fun test_hero_creation() {
 //      5. Assert that the `owner` field of the emitted event matches the expected address (e.g., @USER).
 //--------------------------------------------------------------
 #[test]
-fun test_event_thrown() { assert_eq!(1, 1); }
+fun test_event_thrown() { 
+    let mut test = ts::begin(@USER);
+    init(test.ctx());
+    test.next_tx(@USER);
+
+    let hero = mint_hero(b"Batman".to_string(), test.ctx());
+
+    let events = event::events_by_type<HeroMinted>();
+    assert_eq!(vector::length(&events), 1);
+
+    let emitted_event = vector::borrow(&events, 0);
+    assert_eq!(emitted_event.owner, @USER);
+
+    destroy(hero);
+    test.end();
+ }
 
 //--------------------------------------------------------------
 //  Test 3: Medal Awarding
@@ -91,4 +183,20 @@ fun test_event_thrown() { assert_eq!(1, 1); }
 //      7. Consider creating a shared `MedalStorage` object to manage the available medals.
 //--------------------------------------------------------------
 #[test]
-fun test_medal_award() { assert_eq!(1, 1); }
+fun test_medal_award() { 
+    let mut test = ts::begin(@USER);
+    init(test.ctx());
+    test.next_tx(@USER);
+
+    let mut hero = mint_hero(b"Superman".to_string(), test.ctx());
+
+    let medal_storage = take_shared<MedalStorage>(&test);
+
+    award_medal_of_honor(&mut hero, &medal_storage, b"Medal of Honor".to_string(), test.ctx());
+
+    assert_eq!(vector::length(&hero.medals), 1);
+
+    return_shared(medal_storage);
+    destroy(hero);
+    test.end();
+}

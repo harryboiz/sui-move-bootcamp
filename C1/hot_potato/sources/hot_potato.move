@@ -36,6 +36,9 @@ fun init(ctx: &mut TxContext) {
 
 public fun borrow_potato(): HotPotato {
     // TODO initialize the HotPotato
+    HotPotato {
+        payment_approved: false,
+    }
 }
 
 public fun process_payment(
@@ -44,10 +47,18 @@ public fun process_payment(
     payment: Coin<SUI>,
 ) {
     // TODO process the payment
+    assert!(coin::value(&payment) >= MIN_PAYMENT, EInvalidPayment);
+    balance::deposit(&mut contract_balance.balance, payment);
+    hot_potato.payment_approved = true;
 }
 
 public fun mint_hero(hot_potato: HotPotato, ctx: &mut TxContext): Hero {
     // TODO mint the hero
+    assert!(hot_potato.payment_approved, EInvalidPayment);
+    Hero {
+        id: object::new(ctx),
+        name: b"Hero".to_string(),
+    }
 }
 
 #[test_only]
