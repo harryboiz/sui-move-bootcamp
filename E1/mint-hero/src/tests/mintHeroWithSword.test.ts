@@ -35,7 +35,9 @@ describe("Mint a Hero NFT and equip a Sword", () => {
   });
 
   test("Hero is equiped with a Sword", async () => {
-    const heroSwordIds = await getHeroSwordIds(heroId!);
+    console.log("Hero ID:", heroId);
+    console.log("Sword ID:", swordId);
+    const heroSwordIds = await getHeroSwordIds(heroId || "");
     expect(heroSwordIds.length).toBe(1);
     expect(heroSwordIds[0]).toBe(swordId);
   });

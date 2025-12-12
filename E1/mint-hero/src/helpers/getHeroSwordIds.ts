@@ -6,6 +6,18 @@ import { suiClient } from "../suiClient";
  * Filters the objects and returns the object ids of the swords.
  */
 export const getHeroSwordIds = async (id: string): Promise<string[]> => {
-  // TODO: Implement this function
+  // Get the dynamic object field for "sword" - the field name used in the Move contract
+  const dof = await suiClient.getDynamicFieldObject({
+    parentId: id,
+    name: {
+      type: "0x1::string::String",
+      value: "sword",
+    },
+  });
+
+  if (dof.data?.objectId) {
+    return [dof.data.objectId];
+  }
+
   return [];
 };
