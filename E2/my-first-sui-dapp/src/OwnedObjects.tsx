@@ -1,12 +1,18 @@
 import { useCurrentAccount, useSuiClientQuery } from "@mysten/dapp-kit";
 import { Flex, Heading, Text } from "@radix-ui/themes";
 
+const HERO_TYPE =
+  "0xc413c2e2c1ac0630f532941be972109eae5d6734e540f20109d75a59a1efea1e::hero::Hero";
+
 export function OwnedObjects() {
   const account = useCurrentAccount();
   const { data, isPending, error } = useSuiClientQuery(
     "getOwnedObjects",
     {
       owner: account?.address as string,
+      filter: {
+        StructType: HERO_TYPE,
+      },
     },
     {
       enabled: !!account,
