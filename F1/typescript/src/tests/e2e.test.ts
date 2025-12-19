@@ -12,9 +12,9 @@ describe("Mint a Hero NFT, a Weapon NFT and equip it", () => {
 
   beforeAll(async () => {
     txResponse = await mintHeroWithWeapon();
-    await suiClient.waitForTransaction({ digest: txResponse.digest, timeout: 5_000 });
+    await suiClient.waitForTransaction({ digest: txResponse.digest, timeout: 60_000 });
     console.log("Executed transaction with txDigest:", txResponse.digest);
-  });
+  }, 120_000);
 
   test("Transaction Status", () => {
     expect(txResponse.effects).toBeDefined();
