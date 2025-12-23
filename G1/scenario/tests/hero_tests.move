@@ -17,20 +17,33 @@ fun test_mint() {
     // Initialize package
     let mut scenario = test_scenario::begin(admin);
     acl::init_for_testing(scenario.ctx());
+    scenario.next_tx(admin);
 
     // Task: Mint `Hero`
     {
+        let admins = scenario.take_shared<Admins>();
+        hero::mint(
+            &admins, 
+            health, 
+            stamina, 
+            hero_owner, 
+            scenario.ctx()
+        );
 
+        test_scenario::return_shared(admins);
     };
 
     let mint_effects = scenario.next_tx(hero_owner);
     let mut transferred = mint_effects.transferred_to_account();
-    assert!(transferred.size() == 1);
-    let (hero_id, transferred_to) = transferred.pop();
+    assert!(transferred.length() == 1);
+    let (_hero_id, transferred_to) = transferred.pop();
     assert!(transferred_to == hero_owner);
     // Task: Check `Hero`'s fields
     {
-
+        let hero = test_scenario::take_from_address<Hero>(&scenario, hero_owner);
+        assert!(hero.health() == health);
+        assert!(hero.stamina() == stamina);
+        test_scenario::return_to_address(hero_owner, hero);
     };
 
     scenario.end();
@@ -48,18 +61,39 @@ fun test_level_up() {
     // Initialize package
     let mut scenario = test_scenario::begin(admin);
     acl::init_for_testing(scenario.ctx());
+    scenario.next_tx(admin);
 
     // Task: Mint `Hero` and `XPTome`
     {
-
+        let admins = scenario.take_shared<Admins>();
+        hero::mint(
+            &admins, 
+            health, 
+            stamina, 
+            hero_owner, 
+            scenario.ctx()
+        );
+        xp_tome::new(
+            &admins,
+            xp_health,
+            xp_stamina,
+            hero_owner,
+            scenario.ctx()
+        );
+        test_scenario::return_shared(admins);
     };
 
     let mint_effects = scenario.next_tx(hero_owner);
     let transferred = mint_effects.transferred_to_account();
-    assert!(transferred.size() == 2);
+    assert!(transferred.length() == 2);
     // Task: Apply `XPTome` to `Hero` and check updated stats.
     {
-
+        let mut hero = test_scenario::take_from_address<Hero>(&scenario, hero_owner);
+        let xp_tome = test_scenario::take_from_address<XPTome>(&scenario, hero_owner);
+        hero::level_up(&mut hero, xp_tome);
+        assert!(hero.health() == health + xp_health);
+        assert!(hero.stamina() == stamina + xp_stamina);
+        test_scenario::return_to_address(hero_owner, hero);
     };
 
     scenario.end();

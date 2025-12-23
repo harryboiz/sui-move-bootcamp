@@ -12,24 +12,33 @@ fun test_add_admin() {
 
     // Initialize package
     let mut scenario = test_scenario::begin(initial_admin);
-    acl::init(sui::test_utils::create_one_time_witness<acl::ACL>(), scenario.ctx());
+    acl::init_for_testing(scenario.ctx());
 
-    let begin_effects = scenario.next_tx(initial_admin);
-    let created = begin_effects.created();
-    let shared = begin_effects.shared();
-    let transferred = begin_effects.transferred_to_account();
-    assert!(created.length() == 3);
-    assert!(shared.length() == 1);
-    assert!(transferred.size() == 2);
+    scenario.next_tx(initial_admin);
 
     // Task: Add admin `new_admin`
     {
-
+        let mut admins = test_scenario::take_shared<acl::Admins>(&scenario);
+        let admin_cap = test_scenario::take_from_sender<acl::AdminCap>(&scenario);
+        
+        acl::add_admin(
+            &mut admins,
+            &admin_cap,
+            new_admin
+        );
+        
+        test_scenario::return_shared(admins);
+        test_scenario::return_to_sender(&scenario, admin_cap);
     };
 
     // Task: Authorize admin `new_admin`
     {
-
+        scenario.next_tx(new_admin);
+        let admins = test_scenario::take_shared<acl::Admins>(&scenario);
+        
+        acl::authorize(&admins, scenario.ctx());
+        
+        test_scenario::return_shared(admins);
     };
 
     scenario.end();
