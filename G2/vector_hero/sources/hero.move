@@ -21,8 +21,21 @@ public struct Hero has key {
 /// @param attributes The attributes names of the hero.
 /// @param ctx The transaction context.
 /// @return The hero.
-public fun create_hero_1(name: String, mut attributes: vector<String>, ctx: &mut TxContext): Hero {
+public fun create_hero_1(
+    name: String, 
+    attributes: vector<String>, 
+    ctx: &mut TxContext
+): Hero {
     // iterate over the attributes vector in a while loop and convert each attribute name to an attribute object
+
+    let mut i = 0;
+    let mut hero_attributes: vector<Attribute> = vector::empty();
+    while (i < attributes.length()) {
+        let attr_name = vector::borrow(&attributes, i);
+        let attribute = create_attribute(*attr_name, 1);
+        vector::push_back(&mut hero_attributes, attribute);
+        i = i + 1;  
+    };
 
     let hero = Hero {
         id: object::new(ctx),
@@ -40,9 +53,17 @@ public fun create_hero_1(name: String, mut attributes: vector<String>, ctx: &mut
 /// @param attributes The attributes names of the hero.
 /// @param ctx The transaction context.
 /// @return The hero.
-public fun create_hero_2(name: String, attributes: vector<String>, ctx: &mut TxContext): Hero {
+public fun create_hero_2(
+    name: String, 
+    attributes: vector<String>, 
+    ctx: &mut TxContext
+): Hero {
     // use a built-in vector macro to convert the attributes vector to a vector of attribute objects
     
+    let hero_attributes = vector::map!(attributes, |attr_name| {
+        create_attribute(attr_name, 1)
+    });
+
     let hero = Hero {
         id: object::new(ctx),
         name,
@@ -60,7 +81,11 @@ public fun create_hero_2(name: String, attributes: vector<String>, ctx: &mut TxC
 /// @param attributes The attributes of the hero.
 /// @param ctx The transaction context.
 /// @return The hero.
-public fun create_hero_3(name: String, attributes: vector<Attribute>, ctx: &mut TxContext): Hero {
+public fun create_hero_3(
+    name: String, 
+    attributes: vector<Attribute>, 
+    ctx: &mut TxContext
+): Hero {
     let hero = Hero {
         id: object::new(ctx),
         name,
@@ -81,7 +106,7 @@ public fun transfer_hero(hero: Hero, to: address) {
 // Test Only
 
 #[test_only]
-use sui::test_utils::{assert_eq, destroy};
+use std::unit_test::{assert_eq, destroy};
 
 #[test]
 public fun test_create_hero_with_while_loop() {
@@ -93,12 +118,11 @@ public fun test_create_hero_with_while_loop() {
     ];
     let hero = create_hero_1(b"Hero 1".to_string(), attributes, &mut tx_context::dummy());
 
-    assert_eq(hero.attributes.length(), 4);
-    assert_eq(hero.attributes.any!(|a| a.name == b"fire".to_string()), true);
-    assert_eq(hero.attributes.any!(|a| a.name == b"water".to_string()), true);
-    assert_eq(hero.attributes.any!(|a| a.name == b"earth".to_string()), true);
-    assert_eq(hero.attributes.any!(|a| a.name == b"air".to_string()), true);
-
+    assert_eq!(hero.attributes.length(), 4);
+    assert_eq!(hero.attributes.any!(|a| a.name == b"fire".to_string()), true);
+    assert_eq!(hero.attributes.any!(|a| a.name == b"water".to_string()), true);
+    assert_eq!(hero.attributes.any!(|a| a.name == b"earth".to_string()), true);
+    assert_eq!(hero.attributes.any!(|a| a.name == b"air".to_string()), true);
     destroy(hero);
 }
 
@@ -112,11 +136,10 @@ public fun test_create_hero_with_macro() {
     ];
     let hero = create_hero_2(b"Hero 1".to_string(), attributes, &mut tx_context::dummy());
 
-    assert_eq(hero.attributes.length(), 4);
-    assert_eq(hero.attributes.any!(|a| a.name == b"fire".to_string()), true);
-    assert_eq(hero.attributes.any!(|a| a.name == b"water".to_string()), true);
-    assert_eq(hero.attributes.any!(|a| a.name == b"earth".to_string()), true);
-    assert_eq(hero.attributes.any!(|a| a.name == b"air".to_string()), true);
-
+    assert_eq!(hero.attributes.length(), 4);
+    assert_eq!(hero.attributes.any!(|a| a.name == b"fire".to_string()), true);
+    assert_eq!(hero.attributes.any!(|a| a.name == b"water".to_string()), true);
+    assert_eq!(hero.attributes.any!(|a| a.name == b"earth".to_string()), true);
+    assert_eq!(hero.attributes.any!(|a| a.name == b"air".to_string()), true);
     destroy(hero);
 }

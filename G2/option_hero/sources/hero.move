@@ -29,12 +29,84 @@ public fun create_hero(name: String, ctx: &mut TxContext): Hero {
 
 public fun increase_fire_attribute(hero: &mut Hero, amount: u16) {
     // increase the fire attribute, create it if it doesn't exist
+    if (hero.attributes.contains(Fire())) {
+        let level = bag::borrow_mut<Fire, u16>(&mut hero.attributes, Fire());
+        *level = *level + amount;
+    } else {
+        bag::add(&mut hero.attributes, Fire(), amount);
+    }
 }
 
 // create the other increase functions
 
 public fun get_fire_attribute(hero: &Hero): Option<u16> {
     // get the fire attribute value, if present
+    if (hero.attributes.contains(Fire())) {
+        let level = bag::borrow<Fire, u16>(&hero.attributes, Fire());
+        some(*level)
+    } else {
+        none()
+    }
+}
+
+public fun increase_water_attribute(hero: &mut Hero, amount: u16) {
+    // increase the water attribute, create it if it doesn't exist
+    if (hero.attributes.contains(Water())) {
+        let level = bag::borrow_mut<Water, u16>(&mut hero.attributes, Water());
+        *level = *level + amount;
+    } else {
+        bag::add(&mut hero.attributes, Water(), amount);
+    }
+}
+
+public fun get_water_attribute(hero: &Hero): Option<u16> {
+    // get the water attribute value, if present
+    if (hero.attributes.contains(Water())) {
+        let level = bag::borrow<Water, u16>(&hero.attributes, Water());
+        some(*level)
+    } else {
+        none()
+    }
+}
+
+public fun increase_earth_attribute(hero: &mut Hero, amount: u16) {
+    // increase the earth attribute, create it if it doesn't exist
+    if (hero.attributes.contains(Earth())) {
+        let level = bag::borrow_mut<Earth, u16>(&mut hero.attributes, Earth());
+        *level = *level + amount;
+    } else {
+        bag::add(&mut hero.attributes, Earth(), amount);
+    }
+}
+
+public fun get_earth_attribute(hero: &Hero): Option<u16> {
+    // get the earth attribute value, if present
+    if (hero.attributes.contains(Earth())) {
+        let level = bag::borrow<Earth, u16>(&hero.attributes, Earth());
+        some(*level)
+    } else {
+        none()
+    }
+}
+
+public fun increase_air_attribute(hero: &mut Hero, amount: u16) {
+    // increase the air attribute, create it if it doesn't exist
+    if (hero.attributes.contains(Air())) {
+        let level = bag::borrow_mut<Air, u16>(&mut hero.attributes, Air());
+        *level = *level + amount;
+    } else {
+        bag::add(&mut hero.attributes, Air(), amount);
+    }
+}
+
+public fun get_air_attribute(hero: &Hero): Option<u16> {
+    // get the air attribute value, if present
+    if (hero.attributes.contains(Air())) {
+        let level = bag::borrow<Air, u16>(&hero.attributes, Air());
+        some(*level)
+    } else {
+        none()
+    }
 }
 
 // create the other get functions

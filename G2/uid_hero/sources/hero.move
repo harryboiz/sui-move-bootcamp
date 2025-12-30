@@ -22,6 +22,12 @@ public struct Hero has key {
 /// @return The hero.
 public fun create_hero(name: String, attributes: vector<String>, ctx: &mut TxContext): Hero {
     // create a hero
+    let hero = Hero {
+        id: object::new(ctx),
+        name,
+        attributes: vector::map!(attributes, |attr_name| create_attribute(attr_name, 0)),
+    };
+    hero
 }
 
 public fun create_attribute(name: String, level: u64): Attribute {
@@ -41,6 +47,9 @@ public fun transfer_hero(hero: Hero, to: address) {
 /// @param hero The hero to kill.
 public fun kill_hero(hero: Hero) {
     // destroy the hero
+    let Hero { id, name: _, attributes: _ } = hero;
+    // delete the hero object
+    object::delete(id);
 }
 
 // Test Only

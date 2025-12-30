@@ -42,6 +42,13 @@ public fun create_hero(
     ctx: &mut TxContext,
 ): Hero {
     // create a hero and update the registry
+    let hero = Hero {
+        id: object::new(ctx),
+        name,
+        attributes: vector::map!(attributes, |attr_name| create_attribute(attr_name, 1)),
+    };
+    vector::push_back(&mut r.heroes, object::id(&hero));
+    hero
 }
 
 public fun create_attribute(name: String, level: u64): Attribute {
@@ -61,12 +68,17 @@ public fun transfer_hero(hero: Hero, to: address) {
 /// @param hero The hero to kill.
 public fun kill_hero(r: &mut HeroRegistry, hero: Hero) {
     // destroy hero and update the registry
+    let hero_id = object::id(&hero);
+    vector::push_back(&mut r.killed_heroes, hero_id);
+    let Hero { id, name: _, attributes: _ } = hero;
+    object::delete(id);
 }
 
 // Test Only
 
 #[test_only]
-use sui::{test_scenario as ts, test_utils::{assert_eq, destroy}};
+use sui::{test_scenario as ts};
+use std::unit_test::{assert_eq, destroy};
 
 #[test]
 public fun test_find_alive_heroes() {
@@ -106,10 +118,10 @@ public fun test_find_alive_heroes() {
     kill_hero(&mut registry, hero2);
 
     let alive_heroes = registry.heroes.filter!(|hero_id| !registry.killed_heroes.contains(hero_id));
-    assert_eq(alive_heroes.length(), 1);
-    assert_eq(alive_heroes.contains(&hero1_id), false);
-    assert_eq(alive_heroes.contains(&hero2_id), false);
-    assert_eq(alive_heroes.contains(&hero3_id), true);
+    assert_eq!(alive_heroes.length(), 1);
+    assert_eq!(alive_heroes.contains(&hero1_id), false);
+    assert_eq!(alive_heroes.contains(&hero2_id), false);
+    assert_eq!(alive_heroes.contains(&hero3_id), true);
 
     destroy(hero3);
     destroy(registry);

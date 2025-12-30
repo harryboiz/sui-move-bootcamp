@@ -44,6 +44,11 @@ public fun create_hero(
 ): Hero {
     // create the attributes vector
 
+    let hero_attributes = attributes.keys().map!(|attr_name| {
+        let level = *attributes.get(&attr_name);
+        create_attribute(attr_name, level)
+    });
+
     let hero = Hero {
         id: object::new(ctx),
         name,
@@ -51,6 +56,7 @@ public fun create_hero(
     };
 
     // update the registry
+    vec_map::insert(&mut r.heroes, object::id(&hero), true);
 
     hero
 }
@@ -73,7 +79,13 @@ public fun transfer_hero(hero: Hero, to: address) {
 public fun kill_hero(r: &mut HeroRegistry, hero: Hero) {
     let Hero { id, name: _, attributes: _ } = hero;
     // update the registry
-    id.delete();
+    if (vec_map::contains(&r.heroes, id.as_inner())) {
+        let is_alive = vec_map::get_mut(&mut r.heroes, id.as_inner());  
+        *is_alive = false;
+    };
+
+    // delete the hero object
+    object::delete(id);
 }
 
 // Test Only
